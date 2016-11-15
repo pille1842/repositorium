@@ -1,4 +1,4 @@
-vendor/*
-storage/*
-cache/*
-logs/*
+vendor
+storage
+cache
+logs
