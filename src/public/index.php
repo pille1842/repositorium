@@ -12,12 +12,14 @@ session_start();
 
 $app = new \Slim\App(['settings' => $config]);
 $container = $app->getContainer();
+
 $container['logger'] = function ($c) {
     $logger = new \Monolog\Logger('repositorium_logger');
     $fileHandler = new \Monolog\Handler\StreamHandler('../logs/repositorium.log');
     $logger->pushHandler($fileHandler);
     return $logger;
 };
+
 $container['view'] = function ($c) {
     $view = new \Slim\Views\Twig('../templates', [
         'cache' => '../cache/templates_c'
@@ -28,18 +30,35 @@ $container['view'] = function ($c) {
 
     return $view;
 };
+
 $container['parser'] = function ($c) {
     return new \Mni\FrontYAML\Parser(null, new \Repositorium\Markdown($c));
 };
+
 $container['files'] = function ($c) {
     return new \Repositorium\GitFileBackend($c);
 };
+
 $container['helpers'] = function ($c) {
     return new \Repositorium\Helpers;
 };
+
 $container['flash'] = function () {
     return new \Slim\Flash\Messages();
 };
+
+/**
+ * ROUTE: /api/v1/exists (GET)
+ * ---------------------------
+ *
+ * Checks if a file exists in the repository.
+ *
+ * Parameters:
+ *   - file    the name of the file
+ *
+ * Returns:
+ *   - JSON { status: OK/NOK, [error: Message], [exists: true/false] }
+ */
 $app->get('/api/v1/exists', function (Request $request, Response $response) {
     $file = $request->getParam('file');
     if ($file === null) {
@@ -59,6 +78,20 @@ $app->get('/api/v1/exists', function (Request $request, Response $response) {
 
     return $response->withStatus($status)->withJson($data);
 })->setName('api-exists');
+
+/**
+ * ROUTE: /api/v1/title (GET)
+ * --------------------------
+ *
+ * Generates a valid filename from a title.
+ *
+ * Parameters:
+ *   - title     The title
+ *   - document  Path to the document (for including the parent directory)
+ *
+ * Returns:
+ *   - JSON { status: OK/NOK, [error: Message], [filename: The-generated-filename] }
+ */
 $app->get('/api/v1/title', function (Request $request, Response $response) {
     $title = $request->getParam('title');
     $document = $request->getParam('document');
@@ -100,6 +133,13 @@ $app->get('/api/v1/title', function (Request $request, Response $response) {
 
     return $response->withStatus($status)->withJson($data);
 })->setName('api-title');
+
+/**
+ * ROUTE: /{document}/history (GET)
+ * --------------------------------
+ *
+ * Returns a view with all the versions of a file.
+ */
 $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -124,6 +164,18 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Requ
         'messages' => $messages
     ]);
 })->setName('history');
+
+/**
+ * ROUTE: /{document}/version/{commit} (GET)
+ * -----------------------------------------
+ *
+ * Returns a view with a specific version of a file.
+ *
+ * Parameters:
+ *   - download  If set, file will be presented to the browser as an attachment for downloading.
+ *   - raw       If set, file will be given to the browser in plain text instead of HTML.
+ *   - remark    If set, file will be turned into a Remark.js slideshow.
+ */
 $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -257,6 +309,14 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
         'messages' => $messages
     ]);
 })->setName('version');
+
+/**
+ * ROUTE: /{document}/compare/{range} (GET)
+ * ----------------------------------------
+ *
+ * Compare two or more versions of a file based on a version range
+ * and return a view with the resulting diff.
+ */
 $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -270,6 +330,10 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
     $path = trim(implode(DIRECTORY_SEPARATOR, $arrPath), DIRECTORY_SEPARATOR);
 
     $diff = $filebackend->getFileDiff($path, $range);
+    if ($diff === false) {
+        $this->get('flash')->addMessage('error', "Unable to generate diff. See the logs for more information.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
+    }
 
     $arrDiff = explode("\n", $diff);
     $numberAdditions = 0;
@@ -310,6 +374,18 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
         'messages' => $messages
     ]);
 })->setName('compare');
+
+/**
+ * ROUTE: /{document} (PUT)
+ * ------------------------
+ *
+ * Create a new file or store a new version of an existing file. Redirects
+ * to the "view view" of the file.
+ *
+ * Parameters:
+ *   - content    The new content of the file.
+ *   - commitmsg  A message to be stored with the commit.
+ */
 $app->put('/{document:'.$config['documentPathMatch'].'}', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -322,9 +398,22 @@ $app->put('/{document:'.$config['documentPathMatch'].'}', function (Request $req
     $content = $request->getParsedBodyParam('content');
     $commitmsg = $request->getParsedBodyParam('commitmsg');
 
-    $filebackend->storeFile($path, $content, $commitmsg);
+    $status = $filebackend->storeFile($path, $content, $commitmsg);
+    if (!$status) {
+        $this->get('flash')->addMessage('error', "Unable to store file. See the logs for more information.");
+    }
     return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
 })->setName('update');
+
+/**
+ * ROUTE: /{document} (POST)
+ * -------------------------
+ *
+ * Rename a file. Returns the "view view" of the resulting new file.
+ *
+ * Parameters:
+ *   - target  New name of the file.
+ */
 $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $request, Response $response) {
     $document = $request->getAttribute('document');
     $config = $this->get('settings');
@@ -351,6 +440,14 @@ $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $re
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('rename');
+
+/**
+ * ROUTE: /{document}/restore/{commit} (POST)
+ * ------------------------------------------
+ *
+ * Restore a specific version of the file to the effect that that version of the file
+ * is the new current version. Returns the "view view" of the file.
+ */
 $app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
     $document = $request->getAttribute('document');
     $commit = $request->getAttribute('commit');
@@ -369,6 +466,13 @@ $app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', func
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('restore');
+
+/**
+ * ROUTE: /{document} (DELETE)
+ * ---------------------------
+ *
+ * Delete the given file. Returns a "view view" of the parent directory.
+ */
 $app->delete('/{document:'.$config['documentPathMatch'].'}', function (Request $request, Response $response) {
     $document = $request->getAttribute('document');
     $config = $this->get('settings');
@@ -395,6 +499,13 @@ $app->delete('/{document:'.$config['documentPathMatch'].'}', function (Request $
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $parent]));
     }
 })->setName('destroy');
+
+/**
+ * ROUTE: /{document}/edit (GET)
+ * -----------------------------
+ *
+ * Returns a view with an editor form for the given file.
+ */
 $app->get('/{document:'.$config['documentPathMatch'].'}/edit', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -481,6 +592,18 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/edit', function (Request
         'messages' => $messages
     ]);
 })->setName('edit');
+
+/**
+ * ROUTE: /{document}
+ * ------------------
+ *
+ * Returns a view with the current version of a file.
+ *
+ * Parameters:
+ *   - download  If set, file will be presented to the browser as an attachment for downloading.
+ *   - raw       If set, file will be given to the browser in plain text instead of HTML.
+ *   - remark    If set, file will be turned into a Remark.js slideshow.
+ */
 $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $request, Response $response) {
     $messages = $this->get('flash')->getMessages();
 
@@ -726,4 +849,6 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         'messages' => $messages
     ]);
 })->setName('view');
+
+// RUN THE APP
 $app->run();

@@ -8,7 +8,10 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
         $history = new History($file);
         $output = array();
         $status = 0;
-        $this->executeCommand('log '.$file, $output, $status);
+        $this->executeCommand('log '.escapeshellarg($file), $output, $status);
+        if ($status != 0) {
+            return false;
+        }
         $commit = '';
         $author = '';
         $date = '';
@@ -45,39 +48,53 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 
     public function getFileVersion($file, $version)
     {
-        $status = 0;
         $output = array();
-        $this->executeCommand("show $version:$file", $output, $status);
+        $status = $this->executeCommand('show '.escapeshellarg("$version:$file"), $output);
 
-        return implode("\n", $output);
+        if ($status) {
+            return implode("\n", $output);
+        } else {
+            return false;
+        }
     }
 
     public function getVersionMtime($file, $version)
     {
-        $status = 0;
         $output = array();
-        $this->executeCommand("log $version", $output, $status);
-        $date = trim(substr($output[2], 8));
-
-        return strtotime($date);
+        $status = $this->executeCommand('log '.escapeshellarg($version), $output);
+        if ($status) {
+            $date = trim(substr($output[2], 8));
+            return strtotime($date);
+        } else {
+            return false;
+        }
     }
 
     public function getFileDiff($file, $range)
     {
-        $status = 0;
         $output = array();
-        $this->executeCommand("diff $range $file", $output, $status);
+        $status = $this->executeCommand('diff '.escapeshellarg($range).' '.escapeshellarg($file), $output);
 
-        return implode("\n", $output);
+        if ($status) {
+            return implode("\n", $output);
+        } else {
+            return false;
+        }
     }
 
     public function storeFile($file, $content, $commitmsg)
     {
-        $result = parent::storeFile($file, $content, $commitmsg);
-        $this->executeCommand("add $file", $status, $output);
-        $this->executeCommand('commit -m "'.$commitmsg.'"', $status, $output);
+        $status = parent::storeFile($file, $content, $commitmsg);
 
-        return $result;
+        if ($status) {
+            $status = $this->executeCommand('add '.escapeshellarg($file), $output);
+            if ($status) {
+                $message = escapeshellarg($commitmsg);
+                $status = $this->executeCommand('commit -m '.$message, $output);
+            }
+        }
+
+        return $status;
     }
 
     public function moveFile($file, $target)
@@ -101,40 +118,51 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
                 return false;
             }
         }
-        $this->executeCommand("mv $file $target", $output, $status);
-        $this->executeCommand('commit -m "Move '.$file.' to '.$target.'"', $output, $status);
-        return $status == 0;
+
+        $status = $this->executeCommand('mv '.escapeshellarg($file).' '.escapeshellarg($target), $output);
+        if ($status) {
+            $message = "Move $file to $target";
+            $status = $this->executeCommand('commit -m '.escapeshellarg($message), $output);
+        }
+
+        return $status;
     }
 
     public function restoreFileVersion($file, $version)
     {
         $output = array();
-        $status = 0;
 
-        $this->executeCommand("checkout $version $file", $output, $status);
-        $this->executeCommand('commit -m "Restore '.$version.' of '.$file.'"', $output, $status);
+        $status = $this->executeCommand('checkout '.escapeshellarg($version).' '.escapeshellarg($file), $output);
+        if ($status) {
+            $message = "Restore $version of $file";
+            $status = $this->executeCommand('commit -m '.escapeshellarg($message), $output);
+        }
 
-        return true;
+        return $status;
     }
 
     public function deleteFile($file)
     {
         $output = array();
-        $status = 0;
 
-        $this->executeCommand("rm $file", $output, $status);
-        $this->executeCommand('commit -m "Delete '.$file.'"', $output, $status);
+        $status = $this->executeCommand('rm '.escapeshellarg($file), $output);
+        if ($status) {
+            $status = $this->executeCommand('commit -m "Delete '.escapeshellarg($file).'"', $output);
+        }
 
-        return $status == 0;
+        return $status;
     }
 
-    private function executeCommand($command, &$output, &$status)
+    private function executeCommand($command, &$output)
     {
+        $command = escapeshellcmd($command);
         $cwd = getcwd();
         chdir($this->storageDir);
         $this->container->get('logger')->addInfo("Executing command: /usr/bin/git $command");
         exec('/usr/bin/git '.$command, $output, $status);
         $this->container->get('logger')->addInfo("Return status: $status, length of return output: ".count($output)." lines");
         chdir($cwd);
+
+        return $status == 0;
     }
 }
