@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="alert alert-warning">
+        This is an old version of the document.
+        <a href="{{ path_for('view', { 'document': document }) }}">Click here</a>
+        to see the current version.
+    </div>
+
+    <ol class="breadcrumb">
+        <li><a href="{{ path_for('view', { 'document': '' }) }}">Home</a></li>
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ path_for('view', { 'document': breadcrumb.path }) }}">{{ breadcrumb.caption }}</a></li>
+        {% endfor %}
+    </ol>
+
+    {{ content|raw }}
+{% endblock %}
+
+{% block toc %}
+    {% if language == 'markdown' %}
+    <div class="panel panel-default panel-toc">
+        <div class="panel-heading" id="panel-toc-heading">
+            Table of Contents
+        </div>
+        <div class="panel-body" id="panel-toc-body">
+            <div id="toc"></div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block tools %}
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+           aria-haspopup="true" aria-expanded="false">
+           <span class="sr-only">Export</span>
+           <span class="glyphicon glyphicon-export"></span>
+           <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{{ path_for('version', { 'document': document, 'commit': version }) }}?raw">
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                    Raw
+                </a>
+            </li>
+            <li>
+                <a href="{{ path_for('version', { 'document': document, 'commit': version }) }}?download">
+                    <span class="glyphicon glyphicon-download-alt"></span>
+                    Download
+                </a>
+            </li>
+            <li>
+                <a href="{{ path_for('version', { 'document': document, 'commit': version }) }}?remark">
+                    <span class="glyphicon glyphicon-blackboard"></span>
+                    Slideshow
+                </a>
+            </li>
+        </ul>
+    </li>
+{% endblock %}
+
+{% block sidebar %}
+    {% if sidebar %}
+        {{ sidebar|raw }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block bottom %}
+    <div class="well text-muted">
+        This document was last edited on {{ mtime|date("F jS, Y \\a\\t g:ia") }}.
+    </div>
+{% endblock %}

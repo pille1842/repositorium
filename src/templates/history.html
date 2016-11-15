@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+	<h1>{{ frontmatter.title }}</h1>
+
+  <p>
+      <a href="#" class="btn btn-default" id="repo-btn-compare" data-compare-uri="{{ path_for('compare', { 'document': document, 'range': '' }) }}" disabled>Compare selected versions</a>
+  </p>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Version</th>
+        <th>&nbsp;</th>
+				<th>Message</th>
+				<th>Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for version, values in history %}
+				<tr data-version="{{ version }}">
+					<td><a href="{{ path_for('version', { 'document': document, 'commit': version }) }}"><tt>{{ version }}</tt></a></td>
+          <td><input type="radio" name="repo-check-a" class="repo-compare-chk-a" data-commit="{{ version }}">&nbsp;<input type="radio" name="repo-check-b" class="repo-compare-chk-b" data-commit="{{ version }}">
+					<td>{{ values.message }}</td>
+					<td>{{ values.timestamp|date("F jS, Y \\a\\t g:ia") }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
+
+{% block sidebar %}
+    {% if sidebar %}
+        {{ sidebar|raw }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

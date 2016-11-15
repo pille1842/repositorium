@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="{{ frontmatter.language }}">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>{{ frontmatter.title }}</title>
+        <link href="{{ baseurl }}/assets/css/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ baseurl }}/assets/css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="{{ baseurl }}/assets/css/prism.css" rel="stylesheet">
+        <link href="{{ baseurl }}/assets/css/jquery.tocify.css" rel="stylesheet">
+        {% block head %}{% endblock %}
+        <link href="{{ baseurl }}/assets/css/repositorium.css" rel="stylesheet">
+        {% if frontmatter.description %}
+        <meta name="description" value="{{ frontmatter.description }}">
+        {% endif %}
+        {% if frontmatter.keywords %}
+        <meta name="keywords" value="{{ frontmatter.description }}">
+        {% endif %}
+        {% if frontmatter.author %}
+        <meta name="author" value="{{ frontmatter.description }}">
+        {% endif %}
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <nav class="navbar navbar-default">
+                        <div class="container-fluid">
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                    data-target="#repos-navbar-collapse-1" aria-expanded="false">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                </button>
+                                <a class="navbar-brand" href="{{ path_for('view', { 'document': '' }) }}">Repositorium</a>
+                            </div>
+                            <div class="collapse navbar-collapse" id="repos-navbar-collapse-1">
+                                <ul class="nav navbar-nav">
+                                    <li>
+                                        <a href="{{ path_for('view', { 'document': document }) }}">
+                                            {{ frontmatter.title }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Recent Changes</a>
+                                    </li>
+                                </ul>
+                                <form class="navbar-form navbar-left">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="Search">
+                                    </div>
+                                    <button type="submit" class="btn btn-default">Submit</button>
+                                </form>
+                                <form class="navbar-form navbar-left">
+                                    <button type="button" class="btn btn-success" data-toggle="modal"
+                                            data-target="#reposNewModal">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                        New
+                                    </button>
+                                    <button type="button" class="btn btn-primary" data-toggle="modal"
+                                            data-target="#reposUploadModal">
+                                        <span class="glyphicon glyphicon-upload"></span>
+                                        Upload
+                                    </button>
+                                </form>
+                                <ul class="nav navbar-nav navbar-right">
+                                    {% block tools %}{% endblock %}
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-9">
+                    {% for error in messages.error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                    {% for warning in messages.warning %}
+                        <div class="alert alert-warning" role="alert">
+                            {{ warning }}
+                        </div>
+                    {% endfor %}
+                    {% for info in messages.info %}
+                        <div class="alert alert-info" role="alert">
+                            {{ info }}
+                        </div>
+                    {% endfor %}
+                    {% for success in messages.success %}
+                        <div class="alert alert-success" role="alert">
+                            {{ success }}
+                        </div>
+                    {% endfor %}
+
+                    {% block content %}{% endblock %}
+                </div>
+                <div class="col-md-3">
+                    {% block toc %}{% endblock %}
+                    <div class="panel panel-default">
+                        {% if sidebarFrontmatter.title %}
+                        <div class="panel-heading">
+                            {{ sidebarFrontmatter.title }}
+                        </div>
+                        {% endif %}
+                        <div class="panel-body">
+                            {% block sidebar %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row repos-bottom">
+                <div class="col-xs-12">
+                    {% block bottom %}{% endblock %}
+                    <div class="modal fade" id="reposNewModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h4 class="modal-title">Create a new document</h4>
+                                </div>
+                                <form class="form" method="get" action="" id="reposNewForm">
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="reposNewTitle">Title</label>
+                                            <input class="form-control" type="text" id="reposNewTitle"
+                                                   name="title" placeholder="A Title For This Page"
+                                                   value="" data-ajax="{{ path_for('api-title') }}"
+                                                   data-document="{{ document }}">
+                                        </div>
+                                        <div class="form-group" id="reposNewFilenameGroup">
+                                            <label for="reposNewFilename">Filename</label>
+                                            <input class="form-control" type="text" id="reposNewFilename" name="document"
+                                                   placeholder="a-title-for-this-page.md" value=""
+                                                   data-ajax="{{ path_for('api-exists') }}"
+                                                   autocomplete="off">
+                                            <span id="reposNewFilenameHelpBlock" class="help-block"></span>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                        <button id="reposBtnNew" type="button" class="btn btn-success"
+                                                data-ajax="{{ path_for('edit', { 'document': '$' }) }}">
+                                                Create
+                                        </button>
+                                    </div>
+                                </form>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+                    <div class="modal fade" id="reposUploadModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <h4 class="modal-title">Upload a file</h4>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div><!-- /.modal -->
+                </div>
+            </div>
+        </div>
+        <script src="{{ baseurl }}/assets/js/jquery-1.12.4.min.js"></script>
+        <script src="{{ baseurl }}/assets/js/jquery-ui.min.js"></script>
+        <script src="{{ baseurl }}/assets/js/bootstrap.min.js"></script>
+        <script src="{{ baseurl }}/assets/js/prism.js"></script>
+        <script src="{{ baseurl }}/assets/js/jquery.tocify.min.js"></script>
+        <script src="{{ baseurl }}/assets/js/repositorium.js"></script>
+        {% block foot %}{% endblock %}
+    </body>
+</html>

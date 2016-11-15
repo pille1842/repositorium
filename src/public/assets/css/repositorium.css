@@ -1,0 +1,47 @@
+.redlink, .redlink:hover, .redlink:active, .redlink:focus {
+	color: #c00;
+}
+
+p, li {
+	text-align: justify;
+	hyphens: auto;
+}
+
+#txtContent {
+	height: 450px;
+	font-family: monospace;
+}
+
+.CodeMirror {
+    height: 450px;
+}
+
+.tocify {
+	width: 100%;
+	position: relative;
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	overflow: visible;
+}
+
+.tocify-subheader {
+	display: initial;
+}
+
+.tocify li, .tocify-subheader li {
+	hyphens: manual;
+	text-align: left;
+}
+
+#panel-toc-heading {
+	cursor: pointer;
+}
+
+#panel-toc-body {
+	display: none;
+}
+
+.repos-bottom {
+	margin-top: 50px;
+}

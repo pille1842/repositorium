@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link href="{{ baseurl }}/assets/codemirror-5.20.2/lib/codemirror.css" rel="stylesheet">
+    {% for css in editorcss %}
+    <link href="{{ baseurl }}/assets/codemirror-5.20.2/addon/{{ css }}.css" rel="stylesheet">
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="{{ path_for('update', { 'document': document }) }}" class="form">
+        <div class="form-group">
+            <textarea name="content" id="txtContent" class="form-control">{{ content }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="reposCommitMsg">Commit message</label>
+            {% if documentisnew %}
+                {% set commitmsg = "Create " ~ document %}
+            {% else %}
+                {% set commitmsg = "Edit " ~ document %}
+            {% endif %}
+            <input type="text" class="form-control" name="commitmsg" value="{{ commitmsg }}">
+        </div>
+        <button type="submit" id="btnSubmit" class="btn btn-primary pull-right">Save</button>
+        <input type="hidden" name="_METHOD" value="PUT">
+    </form>
+{% endblock %}
+
+{% block sidebar %}
+    {{ sidebar|raw }}
+{% endblock %}
+
+{% block foot %}
+    <script src="{{ baseurl }}/assets/codemirror-5.20.2/lib/codemirror.js"></script>
+    <script src="{{ baseurl }}/assets/codemirror-5.20.2/mode/{{ editorlanguage }}/{{ editorlanguage }}.js"></script>
+    {% for dep in editordeps %}
+    <script src="{{ baseurl }}/assets/codemirror-5.20.2/mode/{{ dep }}/{{ dep }}.js"></script>
+    {% endfor %}
+    {% for dep in editoraddons %}
+    <script src="{{ baseurl }}/assets/codemirror-5.20.2/addon/{{ dep }}.js"></script>
+    {% endfor %}
+    <script>
+        var reposCodeMirror = CodeMirror.fromTextArea(document.getElementById('txtContent'), {
+            lineNumbers: true,
+            indentUnit: 4,
+            mode: "{{ editorlanguage }}"
+        });
+    </script>
+{% endblock %}

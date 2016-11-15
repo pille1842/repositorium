@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <ol class="breadcrumb">
+        <li><a href="{{ path_for('view', { 'document': '' }) }}">Home</a></li>
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ path_for('view', { 'document': breadcrumb.path }) }}">{{ breadcrumb.caption }}</a></li>
+        {% endfor %}
+    </ol>
+
+    {{ content|raw }}
+{% endblock %}
+
+{% block toc %}
+    {% if language == 'markdown' %}
+    <div class="panel panel-default panel-toc">
+        <div class="panel-heading" id="panel-toc-heading">
+            Table of Contents
+        </div>
+        <div class="panel-body" id="panel-toc-body">
+            <div id="toc"></div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block tools %}
+    {% if isDownloadable %}
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+               aria-haspopup="true" aria-expanded="false">
+               <span class="sr-only">Export</span>
+               <span class="glyphicon glyphicon-export"></span>
+               <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="{{ path_for('view', { 'document': document }) }}?raw">
+                        <span class="glyphicon glyphicon-eye-open"></span>
+                        Raw
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path_for('view', { 'document': document }) }}?download">
+                        <span class="glyphicon glyphicon-download-alt"></span>
+                        Download
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path_for('view', { 'document': document }) }}?remark">
+                        <span class="glyphicon glyphicon-blackboard"></span>
+                        Slideshow
+                    </a>
+                </li>
+            </ul>
+        </li>
+    {% endif %}
+    {% if isEditable %}
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+               aria-haspopup="true" aria-expanded="false">
+               <span class="sr-only">Action</span>
+               <span class="glyphicon glyphicon-file"></span>
+               <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="{{ path_for('edit', { 'document': document }) }}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        Edit
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#reposRenameDocumentModal">
+                        <span class="glyphicon glyphicon-move"></span>
+                        Rename
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path_for('history', { 'document': document }) }}">
+                        <span class="glyphicon glyphicon-fast-backward"></span>
+                        History
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#reposDeleteDocumentModal">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete
+                    </a>
+                </li>
+            </ul>
+        </li>
+    {% endif %}
+{% endblock %}
+
+{% block sidebar %}
+    {% if sidebar %}
+        {{ sidebar|raw }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block bottom %}
+    <div class="well text-muted">
+        This document was last edited on {{ mtime|date("F jS, Y \\a\\t g:ia") }}.
+    </div>
+    <div class="modal fade" id="reposDeleteDocumentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Delete document?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Do you really want to delete this document?</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" action="{{ path_for('destroy', { 'document': document }) }}">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <input type="hidden" name="_METHOD" value="DELETE">
+                    </form>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <div class="modal fade" id="reposRenameDocumentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Rename document</h4>
+                </div>
+                <form class="form" method="post" action="{{ path_for('rename', { 'document': document }) }}">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="reposRenameNewName">New name</label>
+                            <input class="form-control" type="text" id="reposRenameNewName" name="target" value="{{ document }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Rename</button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock %}

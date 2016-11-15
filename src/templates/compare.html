@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    {{ content|raw }}
+{% endblock %}
+
+{% block tools %}
+{% endblock %}
+
+{% block sidebar %}
+<div class="progress">
+    <div class="progress-bar progress-bar-success" style="width: {{ shareadditions }}%;" data-toggle="tooltip" data-placement="bottom" title="{{ numberadditions }} additions">
+        <span class="sr-only">{{ numberadditions }} additions</span>
+    </div>
+    <div class="progress-bar progress-bar-danger" style="width: {{ sharedeletions }}%;" data-toggle="tooltip" data-placement="bottom" title="{{ numberdeletions }} deletions">
+        <span class="sr-only">{{ numberdeletions }} deletions</span>
+    </div>
+</div>
+<p>
+    <a href="{{ path_for('history', { 'document': document }) }}" class="btn btn-default btn-block">Back to history</a>
+</p>
+{% endblock %}
+
+{% block bottom %}
+{% endblock %}
