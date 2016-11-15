@@ -45,3 +45,8 @@ p, li {
 .repos-bottom {
 	margin-top: 50px;
 }
+
+.main-content {
+	line-height: 130%;
+	font-size: 110%;
+}
