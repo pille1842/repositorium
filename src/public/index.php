@@ -152,8 +152,11 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Requ
 
     $history = $filebackend->getFileHistory($path)->getFullHistory();
 
-    $sidebarContent = "Sidebar for history";
-    $sidebarFrontmatter = array('title' => 'Sidebar title');
+    $sidebarContent = '<p>Click on a version to see its contents. Use the radio boxes to compare two versions. '.
+                      'As a general rule, you should place the left radio button above the right one.</p>'.
+                      '<p><a href="'.$this->router->pathFor('view', ['document' => $document]).'" class="btn'.
+                      ' btn-default">Back to the document</a></p>';
+    $sidebarFrontmatter = array('title' => 'History of '.$document);
 
     return $this->view->render($response, 'history.html', [
         'document' => $document,
