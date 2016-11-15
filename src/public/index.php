@@ -358,7 +358,7 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
 
     $frontmatter = array('title' => "$documentShort: Compare $range");
     $content = "<h1>$documentShort: Compare <tt>$range</tt></h1>\n".
-               '<pre><code class="language-git">'."\n".$diff."\n".'</code></pre>';
+               '<pre><code class="language-git">'."\n".htmlspecialchars($diff)."\n".'</code></pre>';
     $sidebarFrontmatter = array('title' => 'Comparison statistics');
 
     return $this->view->render($response, 'compare.html', [
