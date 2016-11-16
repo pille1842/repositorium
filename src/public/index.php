@@ -409,6 +409,32 @@ $app->put('/{document:'.$config['documentPathMatch'].'}', function (Request $req
 })->setName('update');
 
 /**
+ * ROUTE: /{document}/restore/{commit} (POST)
+ * ------------------------------------------
+ *
+ * Restore a specific version of the file to the effect that that version of the file
+ * is the new current version. Returns the "view view" of the file.
+ */
+$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
+    $document = $request->getAttribute('document');
+    $commit = $request->getAttribute('commit');
+    $config = $this->get('settings');
+    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
+    $documentShort = $arrPath[count($arrPath) - 1];
+    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
+    $filebackend = $this->get('files');
+
+    $success = $filebackend->restoreFileVersion($path, $commit);
+    if ($success) {
+        $this->get('flash')->addMessage('success', "Version $commit of $document was restored and is now the current version.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
+    } else {
+        $this->get('flash')->addMessage('error', "Version $commit of $document could not be restored. See the logs for more information.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+})->setName('restore');
+
+/**
  * ROUTE: /{document} (POST)
  * -------------------------
  *
@@ -443,32 +469,6 @@ $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $re
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('rename');
-
-/**
- * ROUTE: /{document}/restore/{commit} (POST)
- * ------------------------------------------
- *
- * Restore a specific version of the file to the effect that that version of the file
- * is the new current version. Returns the "view view" of the file.
- */
-$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
-    $document = $request->getAttribute('document');
-    $commit = $request->getAttribute('commit');
-    $config = $this->get('settings');
-    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
-    $documentShort = $arrPath[count($arrPath) - 1];
-    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
-    $filebackend = $this->get('files');
-
-    $success = $filebackend->restoreFileVersion($path, $commit);
-    if ($success) {
-        $this->get('flash')->addMessage('success', "Version $commit of $document was restored and is now the current version.");
-        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
-    } else {
-        $this->get('flash')->addMessage('error', "Version $commit of $document could not be restored. See the logs for more information.");
-        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
-    }
-})->setName('restore');
 
 /**
  * ROUTE: /{document} (DELETE)
@@ -835,7 +835,8 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
                 }
             }
         }
-        $content .= "\n[Create a custom sidebar](&$sidebarFile)\n";
+        $content .= "\n".'<a class="btn btn-default btn-block" href="'.$this->router->pathFor('edit', ['document' => $sidebarFile]).'">'.
+                    'Create a custom sidebar</a>';
     }
     try {
         $sidebarParserResult = $parser->parse($content);
