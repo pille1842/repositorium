@@ -165,4 +165,9 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 
         return $status == 0;
     }
+
+    private function genFullFileName($file)
+    {
+        return $this->storageDir . DIRECTORY_SEPARATOR . $file;
+    }
 }
