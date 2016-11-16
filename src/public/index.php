@@ -836,7 +836,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             }
         }
         $content .= "\n".'<a class="btn btn-default btn-block" href="'.$this->router->pathFor('edit', ['document' => $sidebarFile]).'">'.
-                    'Create a custom sidebar</a>';
+                    '<span class="glyphicon glyphicon-plus"></span> Create a custom sidebar</a>';
     }
     try {
         $sidebarParserResult = $parser->parse($content);
