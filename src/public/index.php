@@ -891,7 +891,9 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         }
     } else {
         $arrSidebars = $arrPath;
-        array_pop($arrSidebars);
+        if (!$filebackend->isDirectory($sidebarPath)) {
+            array_pop($arrSidebars);
+        }
         rsort($arrSidebars);
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
