@@ -147,7 +147,22 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 
         $status = $this->executeCommand('rm '.escapeshellarg($file), $output);
         if ($status) {
-            $status = $this->executeCommand('commit -m "Delete '.escapeshellarg($file).'"', $output);
+            $commitmsg = "Delete $file";
+            $status = $this->executeCommand('commit -m '.escapeshellarg($commitmsg), $output);
+        }
+
+        return $status;
+    }
+
+    public function commitUploadedFile($file, $target, $commitmsg)
+    {
+        $output = array();
+
+        $this->container->get('logger')->addInfo("Trying to move uploaded file to $target");
+        $file->moveTo($this->genFullFileName($target));
+        $status = $this->executeCommand('add '.escapeshellarg($target), $output);
+        if ($status) {
+            $status = $this->executeCommand('commit -m '.escapeshellarg($commitmsg), $output);
         }
 
         return $status;

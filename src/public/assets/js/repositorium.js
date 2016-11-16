@@ -25,6 +25,20 @@ $("#reposNewTitle").on('keyup', function () {
 	});
 });
 
+$("#reposUploadFile").on('change', function () {
+	if ($(this).val() == '') return;
+
+	var title = { "filename": $(this).val(), "document": $(this).data('document') };
+	var ajax = $(this).data('ajax');
+	$.get(ajax, title, function (data) {
+		if (data.status == 'OK') {
+			$("#reposUploadFilename").val(data.filename);
+		} else {
+			console.log(ajax + " responded with error: " + data.error);
+		}
+	});
+});
+
 $("#reposNewFilename").on('keyup', function () {
 	if ($(this).val() == '') return;
 

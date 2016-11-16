@@ -160,6 +160,24 @@
                                     </button>
                                     <h4 class="modal-title">Upload a file</h4>
                                 </div>
+                                <form class="form" method="post" action="{{ path_for('upload') }}" id="reposUploadForm" enctype="multipart/form-data">
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="reposUploadFile">Choose a file to upload</label>
+                                            <input type="file" name="file" id="reposUploadFile" data-ajax="{{ path_for('api-uploadname') }}" data-document="{{ document }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="reposUploadFilename">Filename</label>
+                                            <input type="text" class="form-control" name="filename" id="reposUploadFilename">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                        <button id="reposBtnNew" type="submit" class="btn btn-primary">
+                                                Upload
+                                        </button>
+                                    </div>
+                                </form>
                             </div><!-- /.modal-content -->
                         </div><!-- /.modal-dialog -->
                     </div><!-- /.modal -->

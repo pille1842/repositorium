@@ -8,6 +8,14 @@ class Helpers
         return self::toAscii($title) . $extension;
     }
 
+    public static function filenameToDocumentName($filename)
+    {
+        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        $basename = pathinfo($filename, PATHINFO_FILENAME);
+
+        return self::toAscii($basename) . '.' . $ext;
+    }
+
     public static function documentNameToPathArray($document, $delimiter)
     {
         $arrPath = explode($delimiter, $document);

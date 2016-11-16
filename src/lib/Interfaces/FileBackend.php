@@ -18,6 +18,7 @@ interface FileBackend
 	public function getFileMimetype($file);
 	public function getFileVersionMimetype($file, $version);
 	public function storeFile($file, $content, $commitmsg);
+	public function commitUploadedFile($file, $target, $commitmsg);
 	public function restoreFileVersion($file, $version);
 	public function moveFile($file, $target);
 	public function deleteFile($file);

@@ -135,6 +135,106 @@ $app->get('/api/v1/title', function (Request $request, Response $response) {
 })->setName('api-title');
 
 /**
+ * ROUTE: /api/v1/uploadname (GET)
+ * -------------------------------
+ *
+ * Generates a valid target filename from the name of a file to be uploaded.
+ *
+ * Parameters:
+ *   - filename  The name of the file to be uploaded
+ *   - document  Path to the document (for including the parent directory)
+ *
+ * Returns:
+ *   - JSON { status: OK/NOK, [error: Message], [filename: The-generated-filename] }
+ */
+$app->get('/api/v1/uploadname', function (Request $request, Response $response) {
+    $title = $request->getParam('filename');
+    $document = $request->getParam('document');
+    $filebackend = $this->get('files');
+
+    if ($title !== null) {
+        $data = array(
+            'status' => 'OK',
+            'filename' => $this->get('helpers')->filenameToDocumentName($title)
+        );
+        if ($document !== null) {
+            $arrPath = $this->get('helpers')->documentNameToPathArray($document, $this->get('settings')['documentPathDelimiter']);
+            if (!$filebackend->isDirectory($document)) {
+                array_pop($arrPath);
+            }
+            $documentPath = trim(implode(DIRECTORY_SEPARATOR, $arrPath), DIRECTORY_SEPARATOR);
+            if ($documentPath != '') {
+                $data['filename'] = $documentPath . DIRECTORY_SEPARATOR . $data['filename'];
+            }
+        }
+        $found = false;
+        $count = 0;
+        do {
+            $found = $filebackend->fileExists($data['filename']);
+            if ($found) {
+                $count++;
+                $tmpTitle = $title.' '.$count;
+                $data['filename'] = $documentPath.DIRECTORY_SEPARATOR.$this->get('helpers')->filenameToDocumentName($tmpTitle);
+            }
+        } while ($found);
+        $status = 200;
+    } else {
+        $data = array(
+            'status' => 'NOK',
+            'error' => 'Parameter filename is required.'
+        );
+        $status = 400;
+    }
+
+    return $response->withStatus($status)->withJson($data);
+})->setName('api-uploadname');
+
+/**
+ * ROUTE: /upload (POST)
+ * ---------------------
+ *
+ * Upload a file and store it in the repository.
+ *
+ * Parameters:
+ *   - file      The file
+ *   - filename  Target name of the file including subdirectories
+ *
+ * Returns:
+ *   - "view view" of the uploaded file
+ */
+$app->post('/upload', function (Request $request, Response $response) {
+    $files = $request->getUploadedFiles();
+    if (empty($files['file'])) {
+        $this->get('flash')->addMessage('error', "No file was uploaded.");
+        $this->get('logger')->addWarning('File upload failed because no file was given.');
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+
+    $file = $files['file'];
+    $filebackend = $this->get('files');
+
+    if ($file->getError() == UPLOAD_ERR_OK) {
+        $filename = $request->getParam('filename');
+        if ($filebackend->fileExists($filename)) {
+            $this->get('flash')->addMessage('error', "The upload worked fine, but the given target file already exists.");
+            $this->get('logger')->addWarning('File upload failed because target file already exists.');
+            return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+        }
+        $status = $filebackend->commitUploadedFile($file, $filename, "Upload $filename");
+        if (!$status) {
+            $this->get('flash')->addMessage('error', "There was an error while moving and committing the uploaded file. See the logs for more information.");
+            $this->get('logger')->addWarning('File upload failed because file could not be moved and committed.');
+            return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+        }
+    } else {
+        $this->get('flash')->addMessage('error', "The upload failed for some reason.");
+        $this->get('logger')->addWarning('File upload failed. Error code: '.$file->getError());
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+    return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $filename]));
+})->setName('upload');
+
+/**
  * ROUTE: /{document}/history (GET)
  * --------------------------------
  *

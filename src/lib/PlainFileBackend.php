@@ -147,6 +147,11 @@ index e4f37c4..557db03 100644
         return @unlink($this->genFullFileName($file));
     }
 
+    public function commitUploadedFile($file, $target, $commitmsg)
+    {
+        return $file->moveTo($target);
+    }
+
     public function getStreamInterface($file)
     {
         return new \GuzzleHttp\Psr7\LazyOpenStream($this->genFullFileName($file), 'r');
