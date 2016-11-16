@@ -891,8 +891,8 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         }
     } else {
         $arrSidebars = $arrPath;
-        rsort($arrSidebars);
         array_pop($arrSidebars);
+        rsort($arrSidebars);
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
             for ($i = 0; $i <= $key; $i++) {
