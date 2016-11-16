@@ -156,10 +156,9 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 
     public function commitUploadedFile($file, $target, $commitmsg)
     {
-        $output = array();
+        parent::commitUploadedFile($file, $target, $commitmsg);
 
-        $this->container->get('logger')->addInfo("Trying to move uploaded file to $target");
-        $file->moveTo($this->genFullFileName($target));
+        $output = array();
         $status = $this->executeCommand('add '.escapeshellarg($target), $output);
         if ($status) {
             $status = $this->executeCommand('commit -m '.escapeshellarg($commitmsg), $output);
