@@ -2,7 +2,7 @@
 	color: #c00;
 }
 
-p, li {
+.main-content p, li {
 	text-align: justify;
 	hyphens: auto;
 }
