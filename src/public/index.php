@@ -892,10 +892,10 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
     } else {
         $arrSidebars = $arrPath;
         rsort($arrSidebars);
-        $max = count($arrSidebars) - 1;
+        array_pop($arrSidebars);
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
-            for ($i = $max; $i > $key; $i--) {
+            for ($i = 0; $i < $key; $i+) {
                 $sidebarPath .= $arrSidebars[$i] . DIRECTORY_SEPARATOR;
             }
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
@@ -935,7 +935,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
                 }
             }
         }
-        $content .= "\n".'<a class="btn btn-default btn-block" href="'.$this->router->pathFor('edit', ['document' => $sidebarFile]).'">'.
+        $content .= "\n".'<a class="btn btn-default btn-block" href="/'.trim($sidebarFile, '/').'/edit">'.
                     '<span class="glyphicon glyphicon-plus"></span> Create a custom sidebar</a>';
     }
     try {
