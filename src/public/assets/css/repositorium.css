@@ -42,6 +42,10 @@ p, li {
 	display: none;
 }
 
+#panel-sidebar-heading {
+	cursor: pointer;
+}
+
 .repos-bottom {
 	margin-top: 50px;
 }

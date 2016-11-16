@@ -6,6 +6,11 @@ $("#panel-toc-heading").click(function () {
 	$("#panel-toc-body").slideToggle();
 });
 
+$("#panel-sidebar-heading").click(function () {
+	$("#panel-sidebar-body").slideToggle();
+	$("#panel-sidebar-body").toggleClass("hidden-xs");
+});
+
 $("#reposNewTitle").on('keyup', function () {
 	if ($(this).val() == '') return;
 

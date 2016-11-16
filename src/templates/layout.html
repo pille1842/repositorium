@@ -72,7 +72,20 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-9">
+                <div class="col-xs-12 col-md-3 col-md-push-9">
+                    {% block toc %}{% endblock %}
+                    <div class="panel panel-default" id="panel-sidebar">
+                        {% if sidebarFrontmatter.title %}
+                        <div class="panel-heading" id="panel-sidebar-heading">
+                            {{ sidebarFrontmatter.title }}
+                        </div>
+                        {% endif %}
+                        <div class="panel-body hidden-xs" id="panel-sidebar-body">
+                            {% block sidebar %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-9 col-md-pull-3">
                     {% for error in messages.error %}
                         <div class="alert alert-danger" role="alert">
                             {{ error }}
@@ -95,19 +108,6 @@
                     {% endfor %}
 
                     {% block content %}{% endblock %}
-                </div>
-                <div class="col-md-3">
-                    {% block toc %}{% endblock %}
-                    <div class="panel panel-default">
-                        {% if sidebarFrontmatter.title %}
-                        <div class="panel-heading">
-                            {{ sidebarFrontmatter.title }}
-                        </div>
-                        {% endif %}
-                        <div class="panel-body">
-                            {% block sidebar %}{% endblock %}
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="row repos-bottom">
