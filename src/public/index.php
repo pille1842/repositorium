@@ -811,20 +811,31 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             array_pop($arrDir);
         }
         $sidebarDir = implode($config['documentPathDelimiter'], $arrDir);
-        $sidebarDir .= $config['documentPathDelimiter'].'sidebar.md';
+        $files = $filebackend->getDirectoryFiles($sidebarDir);
         $sidebarDir = trim($sidebarDir, $config['documentPathDelimiter']);
-        $content = "---\ntitle: Custom Sidebar\n---\n".
-                   "You can display a custom sidebar here in the following ways:\n\n";
-        if ($language == 'markdown') {
-            $content .= "* Specify a `sidebar` document in the YAML frontmatter of this ".
-                        "document. The sidebar will only be displayed for this document.\n";
+        $sidebarFile = $sidebarDir . $config['documentPathDelimiter'].'sidebar.md';
+        $content = "---\ntitle: Directory Index\n---\n\n";
+        if (!empty($files)) {
+            foreach ($files as $file) {
+                if (substr($file, -1, 1) == '/') {
+                    $isDir = true;
+                } else {
+                    $isDir = false;
+                }
+                $fDocument = basename($file);
+                if ($isDir) {
+                    $fDocument .= '/';
+                }
+                $fPath = trim($sidebarDir.$config['documentPathDelimiter'].$fDocument,
+                              $config['documentPathDelimiter']);
+                if ($isDir) {
+                    $content .= "* **[$fDocument](&$fPath)**\n";
+                } else {
+                    $content .= "* [$fDocument](&$fPath)\n";
+                }
+            }
         }
-        $content .= "* Put a document called `sidebar".$config['documentExtension']."` in ".
-                    "this document's directory. It will be displayed for all documents ".
-                    "in this folder. [Click here](&$sidebarDir) to do that now.\n".
-                    "* Put a `sidebar".$config['documentExtension']."` document in one of ".
-                    "the parent directories. Repositorium will walk up the directory tree ".
-                    "until it finds a sidebar to display.";
+        $content .= "\n[Create a custom sidebar](&$sidebarFile)\n";
     }
     try {
         $sidebarParserResult = $parser->parse($content);
