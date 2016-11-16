@@ -895,7 +895,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         array_pop($arrSidebars);
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
-            for ($i = 0; $i < $key; $i++) {
+            for ($i = 0; $i <= $key; $i++) {
                 $sidebarPath .= $arrSidebars[$i] . DIRECTORY_SEPARATOR;
             }
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
