@@ -253,16 +253,17 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Requ
     $history = $filebackend->getFileHistory($path)->getFullHistory();
 
     $sidebarContent = '<p>Click on a version to see its contents. Use the radio boxes to compare two versions. '.
-                      'As a general rule, you should place the left radio button above the right one.</p>'.
-                      '<p><a href="'.$this->router->pathFor('view', ['document' => $document]).'" class="btn'.
-                      ' btn-default btn-block">Back to the document</a></p>';
+                      'As a general rule, you should place the left radio button above the right one.</p>';
     $sidebarFrontmatter = array('title' => 'History of '.$document);
+    $sidebarFooter = '<a href="'.$this->router->pathFor('view', ['document' => $document]).'" class="btn'.
+                     ' btn-default btn-block">Back to the document</a>';
 
     return $this->view->render($response, 'history.html', [
         'document' => $document,
         'frontmatter' => array('title' => "History of $documentShort"),
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'history' => $history,
         'messages' => $messages
     ]);
@@ -384,9 +385,9 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
 
     $sidebarFrontmatter = array('title' => "Version $version of $documentShort");
     $sidebarContent = "<p>This version of $documentShort was created at ".
-                      date('F jS, Y \\a\\t g:ia', $mtime).
-                    '</p><p><form method="post" action="'.$this->router->pathFor('restore', ['document' => $document, 'commit' => $version]).'">'.
-                    '<button type="submit" class="btn btn-default btn-block">Restore this version</button></form></p>';
+                      date('F jS, Y \\a\\t g:ia', $mtime).'</p>';
+    $sidebarFooter = '<form method="post" action="'.$this->router->pathFor('restore', ['document' => $document, 'commit' => $version]).'">'.
+                     '<button type="submit" class="btn btn-default btn-block">Restore this version</button></form>';
 
     $arrBreadcrumbs = array();
     foreach ($arrPath as $key => $value) {
@@ -407,6 +408,7 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
         'content' => $documentContent,
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'mtime' => $mtime,
         'language' => $language,
         'messages' => $messages
@@ -463,12 +465,15 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
     $content = "<h1>$documentShort: Compare <tt>$range</tt></h1>\n".
                '<pre><code class="language-git">'."\n".htmlspecialchars($diff)."\n".'</code></pre>';
     $sidebarFrontmatter = array('title' => 'Comparison statistics');
+    $sidebarFooter = '<a href="'.$this->router->pathFor('history', ['document' => $document]).
+                     '" class="btn btn-default btn-block">Back to history</a>';
 
     return $this->view->render($response, 'compare.html', [
         'document' => $document,
         'range' => $range,
         'frontmatter' => $frontmatter,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'content' => $content,
         'numberadditions' => $numberAdditions,
         'numberdeletions' => $numberDeletions,
