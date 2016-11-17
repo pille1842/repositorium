@@ -7,9 +7,14 @@
 	hyphens: auto;
 }
 
-#panel-sidebar-body ul, #panel-sidebar-body li {
-	padding-left: 10px;
+#panel-sidebar-body li {
+	padding-left: 0px;
 	margin: 0;
+}
+
+#panel-sidebar-body ul {
+        margin-left: 0px;
+        padding-left: 13px;
 }
 
 #txtContent {
