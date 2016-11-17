@@ -910,10 +910,12 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
             if ($filebackend->fileExists($sidebarPath)) {
                 $content = $filebackend->getFileContent($sidebarPath);
+                $sidebarFile = $sidebarPath;
                 break;
             }
         }
     }
+    $sidebarFooter = '';
     if ($content === null) {
         $arrDir = $arrPath;
         if (!$filebackend->isDirectory($path)) {
@@ -944,8 +946,11 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
                 }
             }
         }
-        $content .= "\n".'<a class="btn btn-default btn-block" href="/'.trim($sidebarFile, '/').'/edit">'.
+        $sidebarFooter = '<a class="btn btn-default btn-block" href="/'.trim($sidebarFile, '/').'/edit">'.
                     '<span class="glyphicon glyphicon-plus"></span> Create a custom sidebar</a>';
+    } else {
+        $sidebarFooter = '<a class="btn btn-default btn-block" href="'.$this->router->pathFor('edit', ['document' => $sidebarFile]).'">'.
+                    '<span class="glyphicon glyphicon-pencil"></span> Edit this sidebar</a>';
     }
     try {
         $sidebarParserResult = $parser->parse($content);
@@ -966,6 +971,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         'content' => $documentContent,
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'mtime' => $mtime,
         'isDownloadable' => $isDownloadable,
         'isEditable' => $isEditable,

@@ -85,6 +85,11 @@
                         <div class="panel-body hidden-xs" id="panel-sidebar-body">
                             {% block sidebar %}{% endblock %}
                         </div>
+                        {% if sidebarFooter %}
+                        <div class="panel-footer" id="panel-sidebar-footer">
+                            {{ sidebarFooter|raw }}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-xs-12 col-md-9 col-md-pull-3">
