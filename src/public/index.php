@@ -847,8 +847,15 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         ]);
     }
 
+    if ($language == 'markdown') {
+        if (preg_match('#<h1>(.+?)</h1>#', $documentContent, $matches)) {
+            $title = $matches[1];
+        } else {
+            $title = $documentShort;
+        }
+    }
 
-    $defaultFrontmatter = array('title' => $documentShort, 'language' => $config['language']);
+    $defaultFrontmatter = array('title' => $title, 'language' => $config['language']);
     if ($documentFrontmatter !== null && !empty($documentFrontmatter)) {
         $finalFrontmatter = array_merge($defaultFrontmatter, $documentFrontmatter);
     } else {
