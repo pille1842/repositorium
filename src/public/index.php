@@ -918,7 +918,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
             if ($filebackend->fileExists($sidebarPath)) {
                 $content = $filebackend->getFileContent($sidebarPath);
-                $sidebarFile = $sidebarPath;
+                $sidebarFile = trim($sidebarPath, DIRECTORY_SEPARATOR);
                 break;
             }
         }
