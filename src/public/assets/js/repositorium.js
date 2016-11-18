@@ -6,6 +6,11 @@ $("#panel-toc-heading").click(function () {
 	$("#panel-toc-body").slideToggle();
 });
 
+$("#panel-sidebar-heading").click(function () {
+	$("#panel-sidebar-body").slideToggle();
+	$("#panel-sidebar-body").toggleClass("hidden-xs");
+});
+
 $("#reposNewTitle").on('keyup', function () {
 	if ($(this).val() == '') return;
 
@@ -14,6 +19,20 @@ $("#reposNewTitle").on('keyup', function () {
 	$.get(ajax, title, function (data) {
 		if (data.status == 'OK') {
 			$("#reposNewFilename").val(data.filename);
+		} else {
+			console.log(ajax + " responded with error: " + data.error);
+		}
+	});
+});
+
+$("#reposUploadFile").on('change', function () {
+	if ($(this).val() == '') return;
+
+	var title = { "filename": $(this).val(), "document": $(this).data('document') };
+	var ajax = $(this).data('ajax');
+	$.get(ajax, title, function (data) {
+		if (data.status == 'OK') {
+			$("#reposUploadFilename").val(data.filename);
 		} else {
 			console.log(ajax + " responded with error: " + data.error);
 		}

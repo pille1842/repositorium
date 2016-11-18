@@ -147,6 +147,27 @@ index e4f37c4..557db03 100644
         return @unlink($this->genFullFileName($file));
     }
 
+    public function commitUploadedFile($file, $target, $commitmsg)
+    {
+        $arrPath = explode(DIRECTORY_SEPARATOR, $target);
+        foreach ($arrPath as $key => $value) {
+            $tmpPath = '';
+            for ($i = 0; $i < $key; $i++) {
+                $tmpPath .= DIRECTORY_SEPARATOR . $arrPath[$i];
+            }
+            $tmpPath = trim($tmpPath, DIRECTORY_SEPARATOR);
+            if (!$this->fileExists($this->genFullFileName($tmpPath))) {
+                @mkdir($this->genFullFileName($tmpPath));
+            } elseif (!$this->isDirectory($tmpPath)) {
+                $this->container->logger->addWarning("Could not create directory $tmpPath ".
+                                                     "because it's already a file.");
+                return false;
+            }
+        }
+
+        return $file->moveTo($this->genFullFileName($target));
+    }
+
     public function getStreamInterface($file)
     {
         return new \GuzzleHttp\Psr7\LazyOpenStream($this->genFullFileName($file), 'r');

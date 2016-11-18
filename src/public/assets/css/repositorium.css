@@ -2,9 +2,19 @@
 	color: #c00;
 }
 
-p, li {
+.main-content p, li {
 	text-align: justify;
 	hyphens: auto;
+}
+
+#panel-sidebar-body li {
+	padding-left: 0px;
+	margin: 0;
+}
+
+#panel-sidebar-body ul {
+        margin-left: 0px;
+        padding-left: 13px;
 }
 
 #txtContent {
@@ -42,12 +52,15 @@ p, li {
 	display: none;
 }
 
+#panel-sidebar-heading {
+	cursor: pointer;
+}
+
 .repos-bottom {
 	margin-top: 50px;
 }
 
 .main-content {
-	line-height: 130%;
-	font-size: 1.2em;
-	font-family: serif !important;
+	font-size: 14pt;
+	line-height: 150%;
 }

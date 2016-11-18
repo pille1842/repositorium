@@ -147,7 +147,21 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 
         $status = $this->executeCommand('rm '.escapeshellarg($file), $output);
         if ($status) {
-            $status = $this->executeCommand('commit -m "Delete '.escapeshellarg($file).'"', $output);
+            $commitmsg = "Delete $file";
+            $status = $this->executeCommand('commit -m '.escapeshellarg($commitmsg), $output);
+        }
+
+        return $status;
+    }
+
+    public function commitUploadedFile($file, $target, $commitmsg)
+    {
+        parent::commitUploadedFile($file, $target, $commitmsg);
+
+        $output = array();
+        $status = $this->executeCommand('add '.escapeshellarg($target), $output);
+        if ($status) {
+            $status = $this->executeCommand('commit -m '.escapeshellarg($commitmsg), $output);
         }
 
         return $status;
@@ -164,5 +178,10 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
         chdir($cwd);
 
         return $status == 0;
+    }
+
+    private function genFullFileName($file)
+    {
+        return $this->storageDir . DIRECTORY_SEPARATOR . $file;
     }
 }

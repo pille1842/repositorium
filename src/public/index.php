@@ -135,6 +135,106 @@ $app->get('/api/v1/title', function (Request $request, Response $response) {
 })->setName('api-title');
 
 /**
+ * ROUTE: /api/v1/uploadname (GET)
+ * -------------------------------
+ *
+ * Generates a valid target filename from the name of a file to be uploaded.
+ *
+ * Parameters:
+ *   - filename  The name of the file to be uploaded
+ *   - document  Path to the document (for including the parent directory)
+ *
+ * Returns:
+ *   - JSON { status: OK/NOK, [error: Message], [filename: The-generated-filename] }
+ */
+$app->get('/api/v1/uploadname', function (Request $request, Response $response) {
+    $title = $request->getParam('filename');
+    $document = $request->getParam('document');
+    $filebackend = $this->get('files');
+
+    if ($title !== null) {
+        $data = array(
+            'status' => 'OK',
+            'filename' => $this->get('helpers')->filenameToDocumentName($title)
+        );
+        if ($document !== null) {
+            $arrPath = $this->get('helpers')->documentNameToPathArray($document, $this->get('settings')['documentPathDelimiter']);
+            if (!$filebackend->isDirectory($document)) {
+                array_pop($arrPath);
+            }
+            $documentPath = trim(implode(DIRECTORY_SEPARATOR, $arrPath), DIRECTORY_SEPARATOR);
+            if ($documentPath != '') {
+                $data['filename'] = $documentPath . DIRECTORY_SEPARATOR . $data['filename'];
+            }
+        }
+        $found = false;
+        $count = 0;
+        do {
+            $found = $filebackend->fileExists($data['filename']);
+            if ($found) {
+                $count++;
+                $tmpTitle = $title.' '.$count;
+                $data['filename'] = $documentPath.DIRECTORY_SEPARATOR.$this->get('helpers')->filenameToDocumentName($tmpTitle);
+            }
+        } while ($found);
+        $status = 200;
+    } else {
+        $data = array(
+            'status' => 'NOK',
+            'error' => 'Parameter filename is required.'
+        );
+        $status = 400;
+    }
+
+    return $response->withStatus($status)->withJson($data);
+})->setName('api-uploadname');
+
+/**
+ * ROUTE: /upload (POST)
+ * ---------------------
+ *
+ * Upload a file and store it in the repository.
+ *
+ * Parameters:
+ *   - file      The file
+ *   - filename  Target name of the file including subdirectories
+ *
+ * Returns:
+ *   - "view view" of the uploaded file
+ */
+$app->post('/upload', function (Request $request, Response $response) {
+    $files = $request->getUploadedFiles();
+    if (empty($files['file'])) {
+        $this->get('flash')->addMessage('error', "No file was uploaded.");
+        $this->get('logger')->addWarning('File upload failed because no file was given.');
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+
+    $file = $files['file'];
+    $filebackend = $this->get('files');
+
+    if ($file->getError() == UPLOAD_ERR_OK) {
+        $filename = $request->getParam('filename');
+        if ($filebackend->fileExists($filename)) {
+            $this->get('flash')->addMessage('error', "The upload worked fine, but the given target file already exists.");
+            $this->get('logger')->addWarning('File upload failed because target file already exists.');
+            return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+        }
+        $status = $filebackend->commitUploadedFile($file, $filename, "Upload $filename");
+        if (!$status) {
+            $this->get('flash')->addMessage('error', "There was an error while moving and committing the uploaded file. See the logs for more information.");
+            $this->get('logger')->addWarning('File upload failed because file could not be moved and committed.');
+            return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+        }
+    } else {
+        $this->get('flash')->addMessage('error', "The upload failed for some reason.");
+        $this->get('logger')->addWarning('File upload failed. Error code: '.$file->getError());
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+    return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $filename]));
+})->setName('upload');
+
+/**
  * ROUTE: /{document}/history (GET)
  * --------------------------------
  *
@@ -153,16 +253,17 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Requ
     $history = $filebackend->getFileHistory($path)->getFullHistory();
 
     $sidebarContent = '<p>Click on a version to see its contents. Use the radio boxes to compare two versions. '.
-                      'As a general rule, you should place the left radio button above the right one.</p>'.
-                      '<p><a href="'.$this->router->pathFor('view', ['document' => $document]).'" class="btn'.
-                      ' btn-default btn-block">Back to the document</a></p>';
+                      'As a general rule, you should place the left radio button above the right one.</p>';
     $sidebarFrontmatter = array('title' => 'History of '.$document);
+    $sidebarFooter = '<a href="'.$this->router->pathFor('view', ['document' => $document]).'" class="btn'.
+                     ' btn-default btn-block">Back to the document</a>';
 
     return $this->view->render($response, 'history.html', [
         'document' => $document,
         'frontmatter' => array('title' => "History of $documentShort"),
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'history' => $history,
         'messages' => $messages
     ]);
@@ -284,9 +385,9 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
 
     $sidebarFrontmatter = array('title' => "Version $version of $documentShort");
     $sidebarContent = "<p>This version of $documentShort was created at ".
-                      date('F jS, Y \\a\\t g:ia', $mtime).
-                    '</p><p><form method="post" action="'.$this->router->pathFor('restore', ['document' => $document, 'commit' => $version]).'">'.
-                    '<button type="submit" class="btn btn-default btn-block">Restore this version</button></form></p>';
+                      date('F jS, Y \\a\\t g:ia', $mtime).'</p>';
+    $sidebarFooter = '<form method="post" action="'.$this->router->pathFor('restore', ['document' => $document, 'commit' => $version]).'">'.
+                     '<button type="submit" class="btn btn-default btn-block">Restore this version</button></form>';
 
     $arrBreadcrumbs = array();
     foreach ($arrPath as $key => $value) {
@@ -307,6 +408,7 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
         'content' => $documentContent,
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'mtime' => $mtime,
         'language' => $language,
         'messages' => $messages
@@ -363,12 +465,15 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
     $content = "<h1>$documentShort: Compare <tt>$range</tt></h1>\n".
                '<pre><code class="language-git">'."\n".htmlspecialchars($diff)."\n".'</code></pre>';
     $sidebarFrontmatter = array('title' => 'Comparison statistics');
+    $sidebarFooter = '<a href="'.$this->router->pathFor('history', ['document' => $document]).
+                     '" class="btn btn-default btn-block">Back to history</a>';
 
     return $this->view->render($response, 'compare.html', [
         'document' => $document,
         'range' => $range,
         'frontmatter' => $frontmatter,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'content' => $content,
         'numberadditions' => $numberAdditions,
         'numberdeletions' => $numberDeletions,
@@ -409,6 +514,32 @@ $app->put('/{document:'.$config['documentPathMatch'].'}', function (Request $req
 })->setName('update');
 
 /**
+ * ROUTE: /{document}/restore/{commit} (POST)
+ * ------------------------------------------
+ *
+ * Restore a specific version of the file to the effect that that version of the file
+ * is the new current version. Returns the "view view" of the file.
+ */
+$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
+    $document = $request->getAttribute('document');
+    $commit = $request->getAttribute('commit');
+    $config = $this->get('settings');
+    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
+    $documentShort = $arrPath[count($arrPath) - 1];
+    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
+    $filebackend = $this->get('files');
+
+    $success = $filebackend->restoreFileVersion($path, $commit);
+    if ($success) {
+        $this->get('flash')->addMessage('success', "Version $commit of $document was restored and is now the current version.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
+    } else {
+        $this->get('flash')->addMessage('error', "Version $commit of $document could not be restored. See the logs for more information.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+})->setName('restore');
+
+/**
  * ROUTE: /{document} (POST)
  * -------------------------
  *
@@ -443,32 +574,6 @@ $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $re
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('rename');
-
-/**
- * ROUTE: /{document}/restore/{commit} (POST)
- * ------------------------------------------
- *
- * Restore a specific version of the file to the effect that that version of the file
- * is the new current version. Returns the "view view" of the file.
- */
-$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
-    $document = $request->getAttribute('document');
-    $commit = $request->getAttribute('commit');
-    $config = $this->get('settings');
-    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
-    $documentShort = $arrPath[count($arrPath) - 1];
-    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
-    $filebackend = $this->get('files');
-
-    $success = $filebackend->restoreFileVersion($path, $commit);
-    if ($success) {
-        $this->get('flash')->addMessage('success', "Version $commit of $document was restored and is now the current version.");
-        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => $document]));
-    } else {
-        $this->get('flash')->addMessage('error', "Version $commit of $document could not be restored. See the logs for more information.");
-        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
-    }
-})->setName('restore');
 
 /**
  * ROUTE: /{document} (DELETE)
@@ -747,8 +852,15 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         ]);
     }
 
+    if ($language == 'markdown') {
+        if (preg_match('#<h1>(.+?)</h1>#', $documentContent, $matches)) {
+            $title = $matches[1];
+        } else {
+            $title = $documentShort;
+        }
+    }
 
-    $defaultFrontmatter = array('title' => $documentShort, 'language' => $config['language']);
+    $defaultFrontmatter = array('title' => $title, 'language' => $config['language']);
     if ($documentFrontmatter !== null && !empty($documentFrontmatter)) {
         $finalFrontmatter = array_merge($defaultFrontmatter, $documentFrontmatter);
     } else {
@@ -791,40 +903,59 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         }
     } else {
         $arrSidebars = $arrPath;
+        if (!$filebackend->isDirectory(implode(DIRECTORY_SEPARATOR, $arrPath))) {
+            array_pop($arrSidebars);
+        }
         rsort($arrSidebars);
-        $max = count($arrSidebars) - 1;
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
-            for ($i = $max; $i > $key; $i--) {
+            for ($i = 0; $i <= $key; $i++) {
                 $sidebarPath .= $arrSidebars[$i] . DIRECTORY_SEPARATOR;
             }
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
             if ($filebackend->fileExists($sidebarPath)) {
                 $content = $filebackend->getFileContent($sidebarPath);
+                $sidebarFile = $sidebarPath;
                 break;
             }
         }
     }
+    $sidebarFooter = '';
     if ($content === null) {
         $arrDir = $arrPath;
         if (!$filebackend->isDirectory($path)) {
             array_pop($arrDir);
         }
         $sidebarDir = implode($config['documentPathDelimiter'], $arrDir);
-        $sidebarDir .= $config['documentPathDelimiter'].'sidebar.md';
+        $files = $filebackend->getDirectoryFiles($sidebarDir);
         $sidebarDir = trim($sidebarDir, $config['documentPathDelimiter']);
-        $content = "---\ntitle: Custom Sidebar\n---\n".
-                   "You can display a custom sidebar here in the following ways:\n\n";
-        if ($language == 'markdown') {
-            $content .= "* Specify a `sidebar` document in the YAML frontmatter of this ".
-                        "document. The sidebar will only be displayed for this document.\n";
+        $sidebarFile = $sidebarDir . $config['documentPathDelimiter'].'sidebar.md';
+        $content = "---\ntitle: Directory Index\n---\n\n";
+        if (!empty($files)) {
+            foreach ($files as $file) {
+                if (substr($file, -1, 1) == '/') {
+                    $isDir = true;
+                } else {
+                    $isDir = false;
+                }
+                $fDocument = basename($file);
+                if ($isDir) {
+                    $fDocument .= '/';
+                }
+                $fPath = trim($sidebarDir.$config['documentPathDelimiter'].$fDocument,
+                              $config['documentPathDelimiter']);
+                if ($isDir) {
+                    $content .= "* **[$fDocument](&$fPath)**\n";
+                } else {
+                    $content .= "* [$fDocument](&$fPath)\n";
+                }
+            }
         }
-        $content .= "* Put a document called `sidebar".$config['documentExtension']."` in ".
-                    "this document's directory. It will be displayed for all documents ".
-                    "in this folder. [Click here](&$sidebarDir) to do that now.\n".
-                    "* Put a `sidebar".$config['documentExtension']."` document in one of ".
-                    "the parent directories. Repositorium will walk up the directory tree ".
-                    "until it finds a sidebar to display.";
+        $sidebarFooter = '<a class="btn btn-default btn-block" href="/'.trim($sidebarFile, '/').'/edit">'.
+                    '<span class="glyphicon glyphicon-plus"></span> Create a custom sidebar</a>';
+    } else {
+        $sidebarFooter = '<a class="btn btn-default btn-block" href="'.$this->router->pathFor('edit', ['document' => $sidebarFile]).'">'.
+                    '<span class="glyphicon glyphicon-pencil"></span> Edit this sidebar</a>';
     }
     try {
         $sidebarParserResult = $parser->parse($content);
@@ -845,6 +976,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         'content' => $documentContent,
         'sidebar' => $sidebarContent,
         'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
         'mtime' => $mtime,
         'isDownloadable' => $isDownloadable,
         'isEditable' => $isEditable,

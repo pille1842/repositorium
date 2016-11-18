@@ -14,7 +14,9 @@
         {% endfor %}
     </ol>
 
-    {{ content|raw }}
+    <section class="main-content">
+        {{ content|raw }}
+    </section>
 {% endblock %}
 
 {% block toc %}
