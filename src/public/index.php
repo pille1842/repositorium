@@ -597,8 +597,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/edit', function (Request
 })->setName('edit');
 
 /**
- * ROUTE: /{document}
- * ------------------
+ * ROUTE: /{document} (GET)
+ * ------------------------
  *
  * Returns a view with the current version of a file.
  *
