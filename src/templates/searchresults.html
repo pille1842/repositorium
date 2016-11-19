@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>{{ frontmatter.title }}</h1>
+
+    {% if not results %}
+        <p>No results were found.</p>
+    {% else %}
+        {% for file, lines in results %}
+            <p id="repo-search-results" data-query="{{ query }}">
+                <span class="repo-search-document">
+                    <a href="{{ path_for('view', { 'document': file }) }}">{{ file }}</a>
+                </span>
+                {% for lineno, snippet in lines %}
+                    <span class="repo-search-result">
+                        <span class="repo-search-line">{{ lineno }}: </span>
+                        <span class="repo-search-snippet">{{ snippet }}</span>
+                    </span>
+                {% endfor %}
+            </p>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block sidebar %}
+    <p>
+        Repositorium uses <a href="http://beyondgrep.com/" target="_blank"><tt>ack</tt></a> to search the repository.
+        This means you can use Perl regular expressions in your search term.
+        For more information, see the <a href="http://perldoc.perl.org/perlre.html" target="_blank">manual page</a>
+        on regular expressions.
+    </p>
+{% endblock %}

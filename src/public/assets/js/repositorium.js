@@ -1,5 +1,12 @@
 $(function() {
 	$("#toc").tocify({ "showAndHide": false, "extendPage": false });
+
+	// Highlight search queries
+	var query   = $("#repo-search-results").data("query");
+	var regex   = new RegExp("(" + query + ")", "gi");
+	$(".repo-search-snippet").each(function () {
+		$(this).html($(this).html().replace(regex, '<strong class="repo-search-highlight">' + query + '</strong>'));
+	});
 });
 
 $("#panel-toc-heading").click(function () {

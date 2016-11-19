@@ -39,6 +39,10 @@ $container['files'] = function ($c) {
     return new \Repositorium\GitFileBackend($c);
 };
 
+$container['search'] = function ($c) {
+    return new \Repositorium\AckSearchProvider($c);
+};
+
 $container['helpers'] = function ($c) {
     return new \Repositorium\Helpers;
 };
@@ -188,6 +192,43 @@ $app->get('/api/v1/uploadname', function (Request $request, Response $response) 
 
     return $response->withStatus($status)->withJson($data);
 })->setName('api-uploadname');
+
+/**
+ * ROUTE: /search (GET)
+ * --------------------
+ *
+ * Search for a keyword and return a list of search results.
+ *
+ * Parameters:
+ *   - q    The keyword(s)
+ *
+ * Returns:
+ *   - view with a list of search results
+ */
+$app->get('/search', function (Request $request, Response $response) {
+    $query = $request->getParam('q');
+    $messages = $this->get('flash')->getMessages();
+    if ($query === null || $query == '') {
+        $this->get('flash')->addMessage('warning', "No keyword was given.");
+        return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
+    }
+    $searchbackend = $this->get('search');
+
+    $results = $searchbackend->searchFor($query);
+    $document = '';
+    $sidebarFrontmatter = array('title' => 'Search results');
+    
+    return $this->view->render($response, 'searchresults.html', [
+        'document' => $document,
+        'frontmatter' => array('title' => 'Search for '.$query),
+        'sidebar' => $sidebarContent,
+        'sidebarFrontmatter' => $sidebarFrontmatter,
+        'sidebarFooter' => $sidebarFooter,
+        'results' => $results,
+        'query' => $query,
+        'messages' => $messages
+    ]);
+})->setName('search');
 
 /**
  * ROUTE: /upload (POST)
