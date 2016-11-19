@@ -14,25 +14,50 @@ with your wiki.
 * Simple export of raw document sources and file downloads
 * Built-in presentations using [Remark](https://remarkjs.com/)
 * Fully featured file storage with subdirectories, all based on Git
+* Powerful search utilizing [Ack](http://beyondgrep.com/)
 
 ## Todo
 
-This project is still in very early beta and should not be used in a production
-environment. Better error handling and implementing some of the promised
-features (like searching and uploading binary files) is on the TODO list.
-If you wish to contribute, feel free to message me or send pull requests.
+This project is still in very early beta and should not be used in a
+production environment. If you wish to contribute, feel free to message me or
+send pull requests.
 
-## Installation
+## Getting Started
 
-1. Your server should point to the `public/` directory in the project sources.
-   You can also test Repositorium by executing `php -S localhost:8000
-   routing.php` from within the `public/` directory. This will start a
-   development server on port 8000.
-2. Initialize a Git repository in the `storage/` directory. Make sure that the
-   user that's running the webserver has configured a Git user name and e-mail
-   address or that these settings are made in the storage repository. Error
-   handling is VERY basic at this point!
-3. That's it, have fun exploring the project and making your very own wiki.
+### Prerequisites
+
+You will need the following software on your machine:
+
+* PHP >= 5.6.4
+* [Git](http://git-scm.com/)
+* [Ack](http://beyondgrep.com/)
+
+### Installation
+
+Clone or download the project repository. Look through `src/configuration.php`
+and change any settings that don't match your environment. Create three new
+directories in `src/`: `cache`, `logs` and `storage`. Initialize a Git
+repository in the `storage/` directory (or clone an existing one).
+
+Make especially sure that the paths to Git and Ack are set correctly in your
+configuration file.
+
+Open a terminal in the `src/public` directory and execute the following
+command:
+
+```
+$ php -S localhost:8000 routing.php
+```
+
+This will start a web server on port 8000 of your machine. Navigate your
+browser to `http://localhost:8000`. Congratulations! This is your very own
+Repositorium.
+
+## Semantic Versioning
+
+This project follows the guidelines of [semantic versioning](http://semver.org).
+Have a look at CHANGELOG.md to see what has changed in past releases. The public
+API is described in comment blocks in `public/index.php`.
 
 ## License
 
