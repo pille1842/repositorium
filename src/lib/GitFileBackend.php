@@ -3,6 +3,13 @@ namespace Repositorium;
 
 class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
 {
+    protected $executablePath;
+
+    public function __construct($container)
+    {
+        parent::__construct($container);
+        $this->executablePath = $container->get('settings')['gitPath'];
+    }
     public function getFileHistory($file)
     {
         $history = new History($file);
@@ -172,8 +179,8 @@ class GitFileBackend extends PlainFileBackend implements Interfaces\FileBackend
         $command = escapeshellcmd($command);
         $cwd = getcwd();
         chdir($this->storageDir);
-        $this->container->get('logger')->addInfo("Executing command: /usr/bin/git $command");
-        exec('/usr/bin/git '.$command, $output, $status);
+        $this->container->get('logger')->addInfo("Executing command: ".$this->executablePath." $command");
+        exec($this->executablePath.' '.$command, $output, $status);
         $this->container->get('logger')->addInfo("Return status: $status, length of return output: ".count($output)." lines");
         chdir($cwd);
 

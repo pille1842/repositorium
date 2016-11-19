@@ -5,12 +5,14 @@ class AckSearchProvider implements Interfaces\SearchProvider
 {
     protected $container;
     protected $storageDir;
+    protected $executablePath;
 
     public function __construct($container)
     {
         $this->container  = $container;
         $this->storageDir = rtrim($container->get('settings')['pathToRepository'],
                                   DIRECTORY_SEPARATOR);
+        $this->executablePath = $container->get('settings')['ackPath'];
     }
 
     public function searchFor($keyword)
@@ -43,8 +45,8 @@ class AckSearchProvider implements Interfaces\SearchProvider
         $command = escapeshellcmd($command);
         $cwd = getcwd();
         chdir($this->storageDir);
-        $this->container->get('logger')->addInfo("Executing command: /usr/bin/vendor_perl/ack -i $command");
-        exec('/usr/bin/vendor_perl/ack -i '.$command, $output, $status);
+        $this->container->get('logger')->addInfo("Executing command: ".$this->executablePath." $command");
+        exec($this->executablePath.' '.$command, $output, $status);
         $this->container->get('logger')->addInfo("Return status: $status, length of return output: ".count($output)." lines");
         chdir($cwd);
 
