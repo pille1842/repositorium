@@ -743,8 +743,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/edit', function (Request
 })->setName('edit');
 
 /**
- * ROUTE: /{document}
- * ------------------
+ * ROUTE: /{document} (GET)
+ * ------------------------
  *
  * Returns a view with the current version of a file.
  *
@@ -948,6 +948,9 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             array_pop($arrSidebars);
         }
         rsort($arrSidebars);
+        if (empty($arrSidebars)) {
+            $arrSidebars[0] = '';
+        }
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
             for ($i = 0; $i <= $key; $i++) {
@@ -956,7 +959,7 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
             $sidebarPath .= 'sidebar' . $config['documentExtension'];
             if ($filebackend->fileExists($sidebarPath)) {
                 $content = $filebackend->getFileContent($sidebarPath);
-                $sidebarFile = $sidebarPath;
+                $sidebarFile = trim($sidebarPath, DIRECTORY_SEPARATOR);
                 break;
             }
         }
