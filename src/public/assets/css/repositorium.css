@@ -7,6 +7,11 @@
 	hyphens: auto;
 }
 
+.main-content a.current, #panel-sidebar-body a.current {
+	font-weight: bold;
+	color: #000;
+}
+
 #panel-sidebar-body li {
 	padding-left: 0px;
 	margin: 0;

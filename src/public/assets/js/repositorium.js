@@ -7,6 +7,10 @@ $(function() {
 	$(".repo-search-snippet").each(function () {
 		$(this).html($(this).html().replace(regex, '<strong class="repo-search-highlight">' + query + '</strong>'));
 	});
+
+	// Style links to the current page differently
+	var pathname = (window.location.pathname.match(/[^\/]+$/)[0]);
+    $("a[href$='" + pathname  + "']").addClass("current");
 });
 
 $("#panel-toc-heading").click(function () {
