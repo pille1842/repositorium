@@ -2,7 +2,7 @@
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
-define('REPOSITORIUM_VERSION', '1.0.0');
+define('REPOSITORIUM_VERSION', '1.1.0-devel');
 
 require '../vendor/autoload.php';
 
