@@ -1,20 +1,20 @@
 .redlink, .redlink:hover, .redlink:active, .redlink:focus {
-	color: #c00;
+    color: #c00;
 }
 
 .main-content p, li {
-	text-align: justify;
-	hyphens: auto;
+    text-align: justify;
+    hyphens: auto;
 }
 
 .main-content a.current, #panel-sidebar-body a.current {
-	font-weight: bold;
-	color: #000;
+    font-weight: bold;
+    color: #000;
 }
 
 #panel-sidebar-body li {
-	padding-left: 0px;
-	margin: 0;
+    padding-left: 0px;
+    margin: 0;
 }
 
 #panel-sidebar-body ul {
@@ -23,8 +23,8 @@
 }
 
 #txtContent {
-	height: 450px;
-	font-family: monospace;
+    height: 450px;
+    font-family: monospace;
 }
 
 .CodeMirror {
@@ -32,57 +32,68 @@
 }
 
 .tocify {
-	width: 100%;
-	position: relative;
-	margin: 0;
-	border: 0;
-	border-radius: 0;
-	overflow: visible;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
 }
 
 .tocify-subheader {
-	display: initial;
+    display: initial;
 }
 
 .tocify li, .tocify-subheader li {
-	hyphens: manual;
-	text-align: left;
+    hyphens: manual;
+    text-align: left;
 }
 
 #panel-toc-heading {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 #panel-toc-body {
-	display: none;
+    display: none;
 }
 
 #panel-sidebar-heading {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .repos-bottom {
-	margin-top: 50px;
+    margin-top: 50px;
+}
+
+.repos-bottom-copyright {
+    text-align: center;
+    color: #bbb;
+    padding: 20px;
+}
+
+.repos-bottom-copyright a {
+    color: #bbb;
+    text-decoration: underline;
 }
 
 .main-content {
-	font-size: 14pt;
-	line-height: 150%;
+    font-size: 14pt;
+    line-height: 150%;
 }
 
 .repo-search-document {
-	display: block;
-	font-size: 1.5em;
+    display: block;
+    font-size: 1.5em;
 }
 
 .repo-search-result {
-	display: block;
+    display: block;
 }
 
 .repo-search-line {
-	font-family: monospace;
+    font-family: monospace;
 }
 
 .repo-search-highlight {
-	background-color: #FFEE75;
+    background-color: #FFEE75;
 }

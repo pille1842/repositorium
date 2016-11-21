@@ -2,6 +2,8 @@
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
+define('REPOSITORIUM_VERSION', '1.0.0');
+
 require '../vendor/autoload.php';
 
 $config = include('../configuration.php');
@@ -226,7 +228,8 @@ $app->get('/search', function (Request $request, Response $response) {
         'sidebarFooter' => $sidebarFooter,
         'results' => $results,
         'query' => $query,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('search');
 
@@ -306,7 +309,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/history', function (Requ
         'sidebarFrontmatter' => $sidebarFrontmatter,
         'sidebarFooter' => $sidebarFooter,
         'history' => $history,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('history');
 
@@ -452,7 +456,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/version/{commit}', funct
         'sidebarFooter' => $sidebarFooter,
         'mtime' => $mtime,
         'language' => $language,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('version');
 
@@ -520,7 +525,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/compare/{range}', functi
         'numberdeletions' => $numberDeletions,
         'shareadditions' => $shareAdditions,
         'sharedeletions' => $shareDeletions,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('compare');
 
@@ -738,7 +744,8 @@ $app->get('/{document:'.$config['documentPathMatch'].'}/edit', function (Request
         'editorcss' => $editorCss,
         'mimetype' => $mimetype,
         'documentisnew' => $documentIsNew,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('edit');
 
@@ -1025,7 +1032,8 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         'isDownloadable' => $isDownloadable,
         'isEditable' => $isEditable,
         'language' => $language,
-        'messages' => $messages
+        'messages' => $messages,
+        'repoversion' => REPOSITORIUM_VERSION
     ]);
 })->setName('view');
 

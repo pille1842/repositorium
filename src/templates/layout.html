@@ -22,6 +22,7 @@
         {% if frontmatter.author %}
         <meta name="author" value="{{ frontmatter.description }}">
         {% endif %}
+        <meta name="generator" value="Repositorium/{{ repoversion }}">
     </head>
     <body>
         <div class="container">
@@ -120,6 +121,11 @@
             <div class="row repos-bottom">
                 <div class="col-xs-12">
                     {% block bottom %}{% endblock %}
+                    <div class="repos-bottom-copyright">
+                        Presented by
+                        <a href="https://github.com/pille1842/repositorium" target="_blank">Repositorium</a>
+                        {{ repoversion }}
+                    </div>
                     <div class="modal fade" id="reposNewModal" tabindex="-1" role="dialog">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
