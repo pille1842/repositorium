@@ -11,6 +11,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 * Style links to the current page differently to make navigation links in
   the sidebar more useful
+* Show the Repositorium version in the site footer
 
 ## [1.0.0] - 2016-11-19
 
