@@ -13,6 +13,12 @@ project adheres to [Semantic Versioning](http://semver.org/).
   the sidebar more useful
 * Show the Repositorium version in the site footer
 
+## [1.0.1] - 2017-03-02
+
+### Fixed
+
+* Fix broken sidebar selection in sub-subdirectories
+
 ## [1.0.0] - 2016-11-19
 
 This is the first release of the project.
