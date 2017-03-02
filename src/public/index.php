@@ -954,10 +954,11 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         if (!$filebackend->isDirectory(implode(DIRECTORY_SEPARATOR, $arrPath))) {
             array_pop($arrSidebars);
         }
-        rsort($arrSidebars);
+        krsort($arrSidebars);
         if (empty($arrSidebars)) {
             $arrSidebars[0] = '';
         }
+        $max = count($arrSidebars) - 1;
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
             for ($i = 0; $i <= $key; $i++) {
@@ -1039,3 +1040,4 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
 
 // RUN THE APP
 $app->run();
+
