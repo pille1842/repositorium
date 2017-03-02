@@ -615,14 +615,6 @@ $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $re
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('rename');
-$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
-    $document = $request->getAttribute('document');
-    $commit = $request->getAttribute('commit');
-    $config = $this->get('settings');
-    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
-    $documentShort = $arrPath[count($arrPath) - 1];
-    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
-    $filebackend = $this->get('files');
 
 /**
  * ROUTE: /{document} (DELETE)
@@ -1040,3 +1032,4 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
 
 // RUN THE APP
 $app->run();
+
