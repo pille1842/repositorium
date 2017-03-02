@@ -615,6 +615,14 @@ $app->post('/{document:'.$config['documentPathMatch'].'}', function (Request $re
         return $response->withStatus(302)->withHeader('Location', $this->router->pathFor('view', ['document' => '']));
     }
 })->setName('rename');
+$app->post('/{document:'.$config['documentPathMatch'].'}/restore/{commit}', function (Request $request, Response $response) {
+    $document = $request->getAttribute('document');
+    $commit = $request->getAttribute('commit');
+    $config = $this->get('settings');
+    $arrPath = $this->get('helpers')->documentNameToPathArray($document, $config['documentPathDelimiter']);
+    $documentShort = $arrPath[count($arrPath) - 1];
+    $path = implode(DIRECTORY_SEPARATOR, $arrPath);
+    $filebackend = $this->get('files');
 
 /**
  * ROUTE: /{document} (DELETE)
@@ -947,10 +955,11 @@ $app->get('/[{document:'.$config['documentPathMatch'].'}]', function (Request $r
         if (!$filebackend->isDirectory(implode(DIRECTORY_SEPARATOR, $arrPath))) {
             array_pop($arrSidebars);
         }
-        rsort($arrSidebars);
+        krsort($arrSidebars);
         if (empty($arrSidebars)) {
             $arrSidebars[0] = '';
         }
+        $max = count($arrSidebars) - 1;
         foreach ($arrSidebars as $key => $value) {
             $sidebarPath = '';
             for ($i = 0; $i <= $key; $i++) {
