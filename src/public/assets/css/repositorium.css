@@ -61,6 +61,12 @@
     cursor: pointer;
 }
 
+@media print {
+    .panel-toc, #panel-sidebar, .breadcrumb, .repos-bottom {
+        display: none;
+    }
+}
+
 .repos-bottom {
     margin-top: 50px;
 }
