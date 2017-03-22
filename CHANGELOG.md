@@ -12,6 +12,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
 * Style links to the current page differently to make navigation links in
   the sidebar more useful
 * Show the Repositorium version in the site footer
+* Hide the table of contents, sidebar, footer, and breadcrumbs when printing
+  documents
 
 ## [1.0.1] - 2017-03-02
 
