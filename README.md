@@ -16,12 +16,6 @@ with your wiki.
 * Fully featured file storage with subdirectories, all based on Git
 * Powerful search utilizing [Ack](http://beyondgrep.com/)
 
-## Todo
-
-This project is still in very early beta and should not be used in a
-production environment. If you wish to contribute, feel free to message me or
-send pull requests.
-
 ## Getting Started
 
 ### Prerequisites
